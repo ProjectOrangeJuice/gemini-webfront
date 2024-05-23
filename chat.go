@@ -35,7 +35,7 @@ func sendChat(token string, message string) (string, error) {
 func appendToHistory(token, message, response string) {
 	// Read the current file
 	// Read the chats from the file
-	var chats []chat
+	var chatHistory chatFile
 	// read the file
 	file, err := os.Open(chatDirectory + "/" + token + ".json")
 	if err != nil {
@@ -46,24 +46,24 @@ func appendToHistory(token, message, response string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(content, &chats)
+	err = json.Unmarshal(content, &chatHistory)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// append messages
-	chats = append(chats, chat{
+	chatHistory.Messages = append(chatHistory.Messages, chat{
 		Content: message,
 		Who:     "user",
 	})
 
-	chats = append(chats, chat{
+	chatHistory.Messages = append(chatHistory.Messages, chat{
 		Content: response,
 		Who:     "model",
 	})
 
 	// overwrite the file with the new json
-	bytes, err := json.Marshal(chats)
+	bytes, err := json.Marshal(chatHistory)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,7 +115,19 @@ func startNewChat(token string) {
 	// Populate the history
 
 	// Read the chats from the file
-	var chats []chat
+	chatFile := readChat(token)
+	for _, chat := range chatFile.Messages {
+		cs.History = append(cs.History, &genai.Content{
+			Parts: []genai.Part{
+				genai.Text(chat.Content),
+			},
+			Role: chat.Who,
+		})
+	}
+}
+
+func readChat(token string) chatFile {
+	var chat chatFile
 	// read the file
 	file, err := os.Open(chatDirectory + "/" + token + ".json")
 	if err != nil {
@@ -126,17 +138,9 @@ func startNewChat(token string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = json.Unmarshal(content, &chats)
+	err = json.Unmarshal(content, &chat)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	for _, chat := range chats {
-		cs.History = append(cs.History, &genai.Content{
-			Parts: []genai.Part{
-				genai.Text(chat.Content),
-			},
-			Role: chat.Who,
-		})
-	}
+	return chat
 }

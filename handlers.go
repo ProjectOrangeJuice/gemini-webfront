@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -24,6 +26,11 @@ func startHandlers() {
 	router.GET("/list", listChats)
 	router.POST("/send", sendMessage)
 
+	// Host static pages
+	router.Static("/static", "./static")
+
+	// Start the server
+
 	log.Fatal(http.ListenAndServe(":9090", router))
 }
 
@@ -35,12 +42,19 @@ func handleNewChat(g *gin.Context) {
 	// Random 6 char string
 	token := uuid.New()
 
-	// Create the file
-	file, err := os.Create(chatDirectory + "/" + token.String() + ".json")
+	chatHistory := chatFile{
+		Title: "untitled",
+		When:  time.Now(),
+	}
+
+	bytes, err := json.Marshal(chatHistory)
 	if err != nil {
 		log.Fatal(err)
 	}
-	file.Close()
+	err = os.WriteFile(fmt.Sprintf("%s/%s.json", chatDirectory, token), bytes, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// return the token to the user
 	g.JSON(200, gin.H{
@@ -55,14 +69,19 @@ func listChats(g *gin.Context) {
 		log.Fatal(err)
 	}
 
-	list := make([]string, len(files))
+	c := make([]chats, len(files))
 	for i, f := range files {
-		list[i] = strings.Replace(f.Name(), ".json", "", 1)
+		chatFile := readChat(strings.Replace(f.Name(), ".json", "", 1))
+		c[i] = chats{
+			Title: chatFile.Title,
+			When:  chatFile.When,
+			Token: strings.Replace(f.Name(), ".json", "", 1),
+		}
 	}
 
 	// return the list of files
 	g.JSON(200, gin.H{
-		"chats": list,
+		"Chats": c,
 	})
 }
 
@@ -77,6 +96,6 @@ func sendMessage(g *gin.Context) {
 	message := g.PostForm("message")
 	resp, _ := sendChat(token, message)
 	g.JSON(200, gin.H{
-		"message": resp,
+		"Message": resp,
 	})
 }
