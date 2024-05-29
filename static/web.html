@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>"
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <style>
@@ -52,19 +53,14 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
     </div>
 
     
-
+    <textarea class="w3-input w3-border" name="message" type="text" placeholder="Message" id="msg"></textarea>
+    <button onclick="sendMessage()" class="w3-button w3-block w3-section w3-blue w3-ripple w3-padding">Send</button>
 
   </div>
   
     <!-- Footer -->
   <footer class="w3-content w3-padding-64 w3-text-grey w3-xlarge">
-    <i class="fa fa-facebook-official w3-hover-opacity"></i>
-    <i class="fa fa-instagram w3-hover-opacity"></i>
-    <i class="fa fa-snapchat w3-hover-opacity"></i>
-    <i class="fa fa-pinterest-p w3-hover-opacity"></i>
-    <i class="fa fa-twitter w3-hover-opacity"></i>
-    <i class="fa fa-linkedin w3-hover-opacity"></i>
-    <p class="w3-medium">Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" class="w3-hover-text-green">w3.css</a></p>
+   
   <!-- End footer -->
   </footer>
 
@@ -74,31 +70,62 @@ body, h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif}
 </body>
 
 <script>
-    // Get the history and populate the "history" div
-    $.getJSON("/list", function(data, status){
-        $.each(data.Chats, function(i, field){
-      $("#chatList").append(`<a href="#${field.Token}"> ${field.Title} </a> ` + "<br>");
-    });
+  var converter = new showdown.Converter()
 
-  });
-
-
-
+  function displayHistory(){
   // Get the anchor and populate the history
   let anchor = window.location.hash.substring(1);
   if (anchor !== ""){
     $.getJSON(`/history?token=${anchor}`, function(data, status){
       $("#chatTitle").text(`${data.Title} - ${data.When}`);
       $.each(data.Messages, function(i, field){
+
         if (field.Who === "user"){
           $("#messages").append(`<p><b>${field.Content}</b></p>`);
         }else {
-          $("#messages").append(`<p>${field.Content}</p>`);
+          $("#messages").append(`<p>${converter.makeHtml(field.Content)}</p>`);
         }
     });
     });
   }
 
+  }
+
+    // Get the history and populate the "history" div
+    $.getJSON("/list", function(data, status){
+        $.each(data.Chats, function(i, field){
+      $("#chatList").append(`<a href="#${field.Token}" > ${field.Title} </a> ` + "<br>");
+    });
+
+  });
+
+
+  function sendMessage(){
+    let msg = $("#msg").val();
+    $("#messages").append(`<p><b>${msg}</b></p>`);
+    let anchor = window.location.hash.substring(1);
+    if (msg !== ""){
+      $.post(`/send?token=${anchor}`, {
+        message: msg
+      }).then(function(data, status){
+        $("#msg").val("");
+        console.log(`status is ${status} and data is ${data}`)
+        $("#messages").append(`<p>${converter.makeHtml(data.Message)}</p>`);
+      });
+
+    }
+  }
+
+
+  $(document).ready(function() {
+  $("#chatList").click(function() {
+    // delay 20ms
+    setTimeout(function() {
+      displayHistory();
+    }, 20);
+  });
+});
+displayHistory()
 
 </script>
 

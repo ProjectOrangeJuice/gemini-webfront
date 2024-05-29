@@ -86,6 +86,10 @@ func readResponse(resp *genai.GenerateContentResponse) string { // Return type i
 }
 
 func startNewChat(token string) {
+	if currentToken == token {
+		return
+	}
+
 	// end previous
 	if currentClient != nil {
 		currentClient.Close()
