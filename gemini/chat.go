@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
@@ -31,7 +32,7 @@ func startNewChat(token string) error {
 	cs := model.StartChat()
 
 	currentSender := func(msg string) *genai.GenerateContentResponse {
-		log.Printf("== Me: %s\n== Model:\n", msg)
+		log.Printf("== Me: %s\n", msg)
 		res, err := cs.SendMessage(ctx, genai.Text(msg))
 		if err != nil {
 			log.Fatal(err)
@@ -47,11 +48,16 @@ func startNewChat(token string) error {
 	// Read the chats from the file
 	chatFile, err := ReadChat(token)
 	if err != nil {
+		activeChat.newChat = true
 		log.Printf("could not load in history, %v")
 		return nil
 	}
+	if len(chatFile.Messages) == 0 {
+		activeChat.newChat = true
+	}
 
 	for _, chat := range chatFile.Messages {
+		activeChat.newChat = false
 		cs.History = append(cs.History, &genai.Content{
 			Parts: []genai.Part{
 				genai.Text(chat.Content),
@@ -102,5 +108,10 @@ func ListChats() []chats {
 			Token: strings.Replace(f.Name(), ".json", "", 1),
 		}
 	}
+	// sort the chats by date
+	sort.Slice(c, func(i, j int) bool {
+		return c[i].When.Before(c[j].When)
+	})
+
 	return c
 }

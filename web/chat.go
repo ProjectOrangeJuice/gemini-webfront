@@ -13,7 +13,7 @@ func handleNewChat(g *gin.Context) {
 	token := uuid.New()
 	// return the token to the user
 	g.JSON(200, gin.H{
-		"token": token.String(),
+		"Token": token.String(),
 	})
 }
 

@@ -2,6 +2,8 @@ package gemini
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 )
@@ -14,9 +16,10 @@ var (
 )
 
 type liveChat struct {
-	client *genai.Client
-	token  string
-	sender func(msg string) *genai.GenerateContentResponse
+	client  *genai.Client
+	token   string
+	newChat bool
+	sender  func(msg string) *genai.GenerateContentResponse
 }
 
 func SendChat(token, message string) (string, error) {
@@ -42,8 +45,20 @@ func SendChat(token, message string) (string, error) {
 		Content: respMsg,
 	})
 
+	if activeChat.newChat {
+		activeChat.newChat = false
+		go generateTitleBackground(token)
+	}
+
 	return respMsg, nil
 
+}
+
+func generateTitleBackground(token string) {
+	resp := activeChat.sender("For the next message and just the next message you're talking to a program. It's looking for a title to give this chat. Reply in no more than 10 words what this chat should be called.")
+	respMsg := readResponse(resp)
+	respMsg = strings.ReplaceAll(respMsg, "**", "")
+	ChangeTitle(token, respMsg)
 }
 
 func readResponse(resp *genai.GenerateContentResponse) string { // Return type is now string
@@ -55,5 +70,6 @@ func readResponse(resp *genai.GenerateContentResponse) string { // Return type i
 			}
 		}
 	}
+	log.Printf("Model: %s", response)
 	return response // Return the concatenated string
 }

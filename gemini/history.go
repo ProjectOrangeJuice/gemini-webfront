@@ -40,3 +40,20 @@ func AddToHistory(token string, msg chat) {
 		log.Fatal(err)
 	}
 }
+
+func ChangeTitle(token string, title string) {
+	chatHistory, err := ReadChat(token)
+	if err != nil {
+		log.Printf("can't update the history, %v", err)
+	}
+	chatHistory.Title = title
+	chatHistory.When = time.Now()
+	bytes, err := json.Marshal(chatHistory)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = os.WriteFile(ChatDirectory+"/"+token+".json", bytes, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}

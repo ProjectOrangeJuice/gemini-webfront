@@ -39,8 +39,8 @@ function addUserMsg(msg) {
         </div>
     </div>`)
 }
-
 function addAIMsg(msg) {
+    console.log(msg)
     $("#chatContainer").append(`<div class="w3-padding-large">
         <div class="w3-card w3-round-large w3-padding" style="display: inline-block;">
             <p>${converter.makeHtml(msg)}</p>
@@ -66,6 +66,16 @@ function sendMessage() {
         });
 
     }
+}
+
+function newChat(){
+    // fetch token
+    $.getJSON(`/new`, function (data, status) {
+            // change the page 
+            window.location.replace(`#${data.Token}`)
+            $(".chatTitle").text(`New chat`);
+            $("#chatContainer").html("");
+    });
 }
 
 
