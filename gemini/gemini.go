@@ -31,9 +31,18 @@ func SendChat(token, message string) (string, error) {
 			return "", fmt.Errorf("can't send message, %s", err)
 		}
 	}
-
+	AddToHistory(token, chat{
+		Who:     "user",
+		Content: message,
+	})
 	resp := activeChat.sender(message)
-	return readResponse(resp), nil
+	respMsg := readResponse(resp)
+	AddToHistory(token, chat{
+		Who:     "model",
+		Content: respMsg,
+	})
+
+	return respMsg, nil
 
 }
 

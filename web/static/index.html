@@ -31,18 +31,18 @@ body {font-family: "Roboto", sans-serif}
 
 <div id="myTop" class="w3-container w3-top w3-theme w3-large">
   <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i>
-  <span id="myIntro" class="w3-hide" id="chatTitle">No chat loaded</span></p>
+  <span id="myIntro" class="w3-hide chatTitle" >No chat loaded</span></p>
 </div>
 
 <header class="w3-container w3-theme" style="padding:64px 32px">
-  <h1 class="w3-xxxlarge" id="chatTitle">No chat loaded</h1>
+  <h1 class="w3-xxxlarge chatTitle">No chat loaded</h1>
 </header>
 
 <div class="w3-container" style="padding:32px">
 
     <div id="chatContainer"></div>
     <textarea class="w3-input w3-border" name="message" type="text" placeholder="Message" id="msg"></textarea>
-    <button onclick="sendMessage()" class="w3-button w3-block w3-section w3-blue w3-ripple w3-padding">Send</button>
+    <button onclick="sendMessage()" class="w3-button w3-block w3-section w3-blue w3-ripple w3-padding" id="sendButton">Send</button>
 
 </div>
 
