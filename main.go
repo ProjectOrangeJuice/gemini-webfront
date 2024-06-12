@@ -15,6 +15,15 @@ func main() {
 		log.Fatal("Missing api key")
 	}
 
+	sessionKey := os.Getenv("SESSION_KEY")
+	if apiKey == "" {
+		log.Fatal("Missing session key")
+	}
+
+	if os.Getenv("USER_KEY") == "" {
+		log.Fatal("Missing user key")
+	}
+
 	gemini.GeminiKey = apiKey
-	web.StartHandlers()
+	web.StartHandlers(sessionKey)
 }
