@@ -62,6 +62,9 @@ func generateTitleBackground(token string) {
 }
 
 func readResponse(resp *genai.GenerateContentResponse) string { // Return type is now string
+	if resp == nil {
+		return ">Gemini didn't accept the message<"
+	}
 	response := "" // Initialize response variable
 	for _, cand := range resp.Candidates {
 		if cand.Content != nil {

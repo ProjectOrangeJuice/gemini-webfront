@@ -35,7 +35,8 @@ func startNewChat(token string) error {
 		log.Printf("== Me: %s\n", msg)
 		res, err := cs.SendMessage(ctx, genai.Text(msg))
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("could not send message, %s", err)
+			return nil
 		}
 		return res
 	}
@@ -49,7 +50,7 @@ func startNewChat(token string) error {
 	chatFile, err := ReadChat(token)
 	if err != nil {
 		activeChat.newChat = true
-		log.Printf("could not load in history, %v")
+		log.Printf("could not load in history, %v", err)
 		return nil
 	}
 	if len(chatFile.Messages) == 0 {
